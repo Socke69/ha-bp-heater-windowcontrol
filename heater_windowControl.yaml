@@ -23,12 +23,10 @@ mode: queued
 max: 15
 
 
-
 trigger:
   - platform: state
     entity_id: !input window
     to: on
-
 
 
 action:
