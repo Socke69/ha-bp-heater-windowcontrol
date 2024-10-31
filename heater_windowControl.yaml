@@ -1,24 +1,23 @@
 blueprint:
-  name: Rollladen -  - Virtuell synchronisieren
-  description: Rollladen viertuell auf die Position des physischen setzen, wenn physisches betätigt sind
+  name: Heizung -  - Fenstersteuerung
+  description: Heizung schalten, je nach Zustand vom Fenster
   domain: automation
   input:
-    shutter_virtual:
-      name: Rollo virtuell
-      description: Virtuelles Rollo, welches angepasst wird
+    window:
+      name: Fenster
+      description: Fenster, welche die Heizung steuern sollen
       selector:
         entity:
           filter:
-            - domain: cover
-            - device_class: shutter
-    shutter_physical:
-      name: Rollo phyisch
-      description: Physisches Rollo, welches der Auslöser ist
+            - domain: binary_sensor
+            - device_class: window
+    heater:
+      name: Heizung
+      description: Heizungen, welche gesteuert werden sollen
       selector:
         entity:
           filter:
-            - domain: cover
-            - device_class: shutter   
+            - domain: climate 
 
 mode: queued
 max: 15
@@ -26,27 +25,27 @@ max: 15
 
 trigger:
   - platform: state
-    entity_id: !input shutter_physical
-    to: closing
+    entity_id: !input window
+    to: "on"
   - platform: state
-    entity_id: !input shutter_physical
-    to: opening
+    entity_id: !input window
+    to: "off"
 
 
 action:
   - if:
       - condition: state
-        entity_id: !input shutter_physical
-        state: closing
+        entity_id: !input window
+        state: "on"
     then:
-      - service: cover.close_cover
+      - service: climate.turn_off
         target:
-          entity_id: !input shutter_virtual
+          entity_id: !input heater
   - if:
       - condition: state
-        entity_id: !input shutter_physical
-        state: opening
+        entity_id: !input window
+        state: "off"
     then:
-      - service: cover.open_cover
+      - service: climate.turn_on
         target:
-          entity_id: !input shutter_virtual
+          entity_id: !input heater
