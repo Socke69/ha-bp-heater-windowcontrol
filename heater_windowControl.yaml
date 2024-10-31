@@ -1,0 +1,42 @@
+blueprint:
+  name: Heizung -  - Fenstersteuerung
+  description: Heizung schalten, je nach Zustand vom Fenster
+  domain: automation
+  input:
+    window:
+      name: Fenster
+      description: Fenster, welche die Heizung steuern sollen
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+            - device_class: window
+    heater:
+      name: Heizung
+      description: Heizungen, welche gesteuert werden sollen
+      selector:
+        entity:
+          filter:
+            - domain: climate 
+
+mode: queued
+max: 15
+
+
+
+trigger:
+  - platform: state
+    entity_id: !input window
+    to: on
+
+
+
+action:
+  - if:
+      - condition: state
+        entity_id: !input window
+        state: on
+    then:
+      - service: climate.turn_off
+        target:
+          entity_id: !input heater
