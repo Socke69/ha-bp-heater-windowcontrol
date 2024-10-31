@@ -1,23 +1,24 @@
 blueprint:
-  name: Heizung -  - Fenstersteuerung
-  description: Heizung schalten, je nach Zustand vom Fenster
+  name: Rollladen -  - Virtuell synchronisieren
+  description: Rollladen viertuell auf die Position des physischen setzen, wenn physisches betätigt sind
   domain: automation
   input:
-    window:
-      name: Fenster
-      description: Fenster, welche die Heizung steuern sollen
+    shutter_virtual:
+      name: Rollo virtuell
+      description: Virtuelles Rollo, welches angepasst wird
       selector:
         entity:
           filter:
-            - domain: binary_sensor
-            - device_class: window
-    heater:
-      name: Heizung
-      description: Heizungen, welche gesteuert werden sollen
+            - domain: cover
+            - device_class: shutter
+    shutter_physical:
+      name: Rollo phyisch
+      description: Physisches Rollo, welches der Auslöser ist
       selector:
         entity:
           filter:
-            - domain: climate 
+            - domain: cover
+            - device_class: shutter   
 
 mode: queued
 max: 15
@@ -25,16 +26,27 @@ max: 15
 
 trigger:
   - platform: state
-    entity_id: !input window
-    to: on
+    entity_id: !input shutter_physical
+    to: closing
+  - platform: state
+    entity_id: !input shutter_physical
+    to: opening
 
 
 action:
   - if:
       - condition: state
-        entity_id: !input window
-        state: on
+        entity_id: !input shutter_physical
+        state: closing
     then:
-      - service: climate.turn_off
+      - service: cover.close_cover
         target:
-          entity_id: !input heater
+          entity_id: !input shutter_virtual
+  - if:
+      - condition: state
+        entity_id: !input shutter_physical
+        state: opening
+    then:
+      - service: cover.open_cover
+        target:
+          entity_id: !input shutter_virtual
